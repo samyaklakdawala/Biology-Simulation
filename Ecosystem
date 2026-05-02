@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Energy Flow & Trophic Levels — IB DP Biology</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green:#16a34a; --amber:#d97706; --red:#dc2626;
+    --bg:#f0fdf4; --card:#ffffff; --border:#bbf7d0;
+    --text:#1a3c2b; --sub:#4b7c5e;
+    --tl1:#22c55e; --tl2:#f59e0b; --tl3:#ef4444; --tl4:#8b5cf6;
+    --tl5:#0ea5e9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+  h1,h2,h3,.label{font-family:'Fredoka One',cursive}
+
+  /* SPLASH */
+  #splash{position:fixed;inset:0;background:linear-gradient(135deg,#052e16 0%,#14532d 50%,#166534 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s}
+  #splash.gone{opacity:0;pointer-events:none}
+  .splash-sun{width:120px;height:120px;background:radial-gradient(circle,#fde68a,#f59e0b);border-radius:50%;box-shadow:0 0 60px #fde68a,0 0 120px #f59e0b44;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+  .splash-title{font-family:'Fredoka One',cursive;font-size:3rem;color:#fff;text-align:center;margin-top:24px;text-shadow:0 4px 20px #000a}
+  .splash-sub{color:#bbf7d0;font-size:1.1rem;margin-top:8px;text-align:center}
+  .splash-tag{background:#16a34a;color:#fff;padding:6px 18px;border-radius:20px;font-size:.9rem;margin-top:12px;font-weight:700}
+  .splash-btn{margin-top:40px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;padding:18px 56px;font-family:'Fredoka One',cursive;font-size:1.5rem;border-radius:50px;cursor:pointer;box-shadow:0 8px 30px #16a34a66;animation:bounce 1.5s infinite;transition:transform .15s}
+  .splash-btn:hover{transform:scale(1.06)}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+  /* LAYOUT */
+  #app{display:none;flex-direction:column;min-height:100vh;padding:12px;gap:12px;max-width:1280px;margin:0 auto}
+  #app.show{display:flex}
+
+  /* PHASE TIMELINE */
+  .timeline{display:flex;gap:8px;align-items:center;background:var(--card);border-radius:16px;padding:12px 20px;border:2px solid var(--border)}
+  .phase-dot{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;cursor:default}
+  .phase-circle{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:1.1rem;font-weight:900;border:3px solid #e2e8f0;background:#f1f5f9;color:#94a3b8;transition:all .4s}
+  .phase-circle.active{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border-color:#16a34a;box-shadow:0 0 0 4px #bbf7d0;animation:ring 1.5s infinite}
+  @keyframes ring{0%,100%{box-shadow:0 0 0 4px #bbf7d0}50%{box-shadow:0 0 0 8px #86efac}}
+  .phase-circle.done{background:#16a34a;color:#fff;border-color:#15803d}
+  .phase-label{font-size:.7rem;font-weight:700;color:var(--sub);text-align:center}
+  .phase-line{flex:1;height:3px;background:#e2e8f0;border-radius:2px;max-width:40px}
+  .phase-line.done{background:#16a34a}
+
+  /* MAIN GRID */
+  .main-grid{display:grid;grid-template-columns:1fr 340px;gap:12px;flex:1}
+  .left-col{display:flex;flex-direction:column;gap:12px}
+  .right-col{display:flex;flex-direction:column;gap:12px}
+
+  /* CARDS */
+  .card{background:var(--card);border-radius:16px;border:2px solid var(--border);padding:16px;overflow:hidden}
+  .card-title{font-family:'Fredoka One',cursive;font-size:1.2rem;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+
+  /* SVG SCENE */
+  #scene-wrap{position:relative;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#bae6fd 0%,#dbeafe 40%,#d1fae5 70%,#86efac 100%);border:2px solid #93c5fd}
+  #mainSVG{width:100%;display:block}
+
+  /* SLIDERS */
+  .sliders-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .slider-row{display:flex;flex-direction:column;gap:4px}
+  .slider-label{font-size:.78rem;font-weight:700;color:var(--sub)}
+  .slider-val{font-family:'Fredoka One',cursive;font-size:1rem;color:var(--tl1);min-width:24px}
+  .slider-top{display:flex;justify-content:space-between;align-items:center}
+  input[type=range]{width:100%;accent-color:var(--green);cursor:pointer;height:6px}
+  .slider-ends{display:flex;justify-content:space-between;font-size:.62rem;color:#94a3b8;margin-top:2px}
+
+  /* RESOURCE BARS */
+  .res-bar-wrap{margin-bottom:8px}
+  .res-bar-label{display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;margin-bottom:3px}
+  .res-bar-bg{background:#e2e8f0;border-radius:10px;height:14px;overflow:hidden;position:relative}
+  .res-bar-fill{height:100%;border-radius:10px;transition:width .8s cubic-bezier(.4,0,.2,1),background .5s;position:relative}
+  .res-bar-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 60%,rgba(255,255,255,.3));border-radius:10px}
+  .warn-blink{animation:warnblink .6s infinite}
+  @keyframes warnblink{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* PREDICTION WIDGET */
+  .pred-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .pred-btn{border:3px solid transparent;background:#f8fafc;border-radius:12px;padding:10px 8px;cursor:pointer;text-align:center;font-weight:700;font-size:.85rem;transition:all .2s}
+  .pred-btn:hover{transform:scale(1.04)}
+  .pred-btn.sel{border-color:var(--green);background:#dcfce7;color:var(--text)}
+  .pred-btn.sel-amber{border-color:var(--amber);background:#fef3c7}
+  .pred-btn.sel-red{border-color:var(--red);background:#fee2e2}
+  .advance-btn{width:100%;padding:14px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:14px;font-family:'Fredoka One',cursive;font-size:1.2rem;cursor:pointer;box-shadow:0 4px 15px #16a34a44;transition:all .2s}
+  .advance-btn:disabled{background:#d1d5db;box-shadow:none;cursor:not-allowed;color:#9ca3af}
+  .advance-btn:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 25px #16a34a55}
+
+  /* THREE FUTURES CARD */
+  #futuresCard{display:none;background:linear-gradient(135deg,#f0fdf4,#f0f9ff);border:2px solid #86efac;border-radius:16px;padding:16px;margin-top:10px}
+  .future-item{background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:8px;border-left:4px solid #86efac;font-size:.82rem}
+  .future-item h4{font-family:'Fredoka One',cursive;font-size:1rem;margin-bottom:4px}
+  .future-A{border-left-color:#22c55e}
+  .future-B{border-left-color:#f59e0b}
+  .future-C{border-left-color:#ef4444}
+  .rank-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .rank-btn{flex:1;padding:8px;border:2px solid #e2e8f0;border-radius:8px;cursor:pointer;font-weight:700;font-size:.8rem;text-align:center;transition:all .2s;min-width:80px}
+  .rank-btn.picked{background:#dcfce7;border-color:#16a34a}
+  .justif-input{width:100%;margin-top:8px;padding:8px;border:2px solid #e2e8f0;border-radius:8px;font-family:'Nunito',sans-serif;font-size:.82rem;resize:none}
+  .reveal-btn{width:100%;margin-top:10px;padding:12px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:12px;font-family:'Fredoka One',cursive;font-size:1.1rem;cursor:pointer;transition:all .2s}
+  .reveal-btn:hover{transform:translateY(-2px)}
+
+  /* ADVISOR CHIPS */
+  .advisor-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .advisor-chip{position:relative;display:flex;align-items:center;gap:6px;background:#fff;border:2px solid var(--border);border-radius:20px;padding:6px 12px;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;user-select:none}
+  .advisor-chip:hover{background:#dcfce7;border-color:#16a34a;transform:translateY(-2px)}
+  .advisor-chip .chip-tip{display:none;position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:#1a3c2b;color:#fff;padding:8px 12px;border-radius:10px;font-size:.72rem;font-weight:600;width:200px;text-align:center;z-index:100;pointer-events:none;line-height:1.4}
+  .advisor-chip:hover .chip-tip{display:block}
+
+  /* CHART */
+  #chartCanvas{width:100%;height:180px;display:block;border-radius:10px}
+
+  /* MODAL */
+  #modal{display:none;position:fixed;inset:0;background:#0006;z-index:8888;align-items:center;justify-content:center}
+  #modal.show{display:flex}
+  .modal-box{background:#fff;border-radius:24px;padding:28px;max-width:680px;width:95%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px #0004;border:3px solid #bbf7d0}
+  .modal-title{font-family:'Fredoka One',cursive;font-size:1.8rem;margin-bottom:16px;color:var(--text)}
+  .outcome-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+  .outcome-item{background:#f8fafc;border-radius:10px;padding:10px;text-align:center;border:2px solid #e2e8f0}
+  .outcome-item .o-label{font-size:.72rem;font-weight:700;color:var(--sub);margin-bottom:4px}
+  .outcome-item .o-val{font-family:'Fredoka One',cursive;font-size:1.1rem}
+  .o-up{color:#16a34a} .o-down{color:#dc2626} .o-same{color:#d97706}
+  .chain-box{background:#f0fdf4;border:2px solid #bbf7d0;border-radius:12px;padding:14px;margin-bottom:14px}
+  .chain-box h4{font-family:'Fredoka One',cursive;font-size:1rem;color:#166534;margin-bottom:8px}
+  .chain-step{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:.82rem}
+  .chain-arrow{color:#16a34a;font-size:1.1rem;font-weight:900}
+  .rw-echo{background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #f59e0b;border-radius:12px;padding:14px;margin-bottom:14px}
+  .rw-echo h4{font-family:'Fredoka One',cursive;font-size:1rem;color:#92400e;margin-bottom:6px}
+  .ib-prompt{background:linear-gradient(135deg,#ede9fe,#ddd6fe);border:2px solid #8b5cf6;border-radius:12px;padding:14px;font-size:.85rem;color:#4c1d95}
+  .ib-prompt h4{font-family:'Fredoka One',cursive;font-size:1rem;margin-bottom:6px}
+  .modal-close{width:100%;margin-top:16px;padding:14px;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;border-radius:14px;font-family:'Fredoka One',cursive;font-size:1.2rem;cursor:pointer}
+
+  /* EVENT CARD */
+  #eventCard{display:none;position:fixed;top:20px;right:20px;background:#fff;border:3px solid #f59e0b;border-radius:20px;padding:20px 24px;z-index:7777;max-width:340px;box-shadow:0 8px 30px #0003;animation:slideIn .4s ease}
+  @keyframes slideIn{from{transform:translateX(120%)}to{transform:translateX(0)}}
+  .event-title{font-family:'Fredoka One',cursive;font-size:1.2rem;color:#92400e;margin-bottom:8px}
+  .event-body{font-size:.82rem;margin-bottom:12px}
+  .event-close{background:#f59e0b;color:#fff;border:none;padding:8px 20px;border-radius:10px;cursor:pointer;font-family:'Fredoka One',cursive}
+
+  /* TOAST */
+  #toastZone{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9000;display:flex;flex-direction:column;gap:8px;align-items:center}
+  .toast{background:#1a3c2b;color:#fff;padding:10px 24px;border-radius:20px;font-size:.85rem;font-weight:700;box-shadow:0 4px 20px #0004;animation:toastIn .3s ease;white-space:nowrap}
+  @keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+  /* REFLECTION */
+  #reflectionPanel{display:none;background:var(--card);border-radius:16px;border:2px solid #8b5cf6;padding:20px}
+  #reflectionPanel h2{font-family:'Fredoka One',cursive;font-size:1.8rem;color:#4c1d95;margin-bottom:16px}
+  .ref-q{background:#ede9fe;border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:.85rem;border-left:4px solid #8b5cf6}
+  .ref-q strong{font-family:'Fredoka One',cursive;color:#6d28d9;display:block;margin-bottom:4px}
+  .reset-btn{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;border:none;padding:10px 24px;border-radius:12px;font-family:'Fredoka One',cursive;font-size:1rem;cursor:pointer;margin-top:10px;transition:all .2s}
+  .reset-btn:hover{transform:scale(1.05)}
+
+  /* HEADER BAR */
+  .header-bar{display:flex;justify-content:space-between;align-items:center;padding:0 4px}
+  .game-title{font-family:'Fredoka One',cursive;font-size:1.5rem;color:#166534}
+  .header-right{display:flex;gap:8px;align-items:center}
+  .round-badge{background:#16a34a;color:#fff;padding:4px 14px;border-radius:20px;font-weight:700;font-size:.85rem}
+
+  @media(max-width:900px){
+    .main-grid{grid-template-columns:1fr}
+    .sliders-grid{grid-template-columns:1fr}
+    .splash-title{font-size:2rem}
+  }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-sun">🌞</div>
+  <div class="splash-title">⚡ Energy Flow &<br>Trophic Levels</div>
+  <div class="splash-sub">IB DP Biology · Ecosystem Simulation · Year 11</div>
+  <div class="splash-tag">🔑 Key Concept: Interaction · ATL: Thinking & Research</div>
+  <button class="splash-btn" onclick="startSim()">🌱 Start Simulation</button>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="header-bar">
+    <div class="game-title">⚡ Ecosystem Energy Flow</div>
+    <div class="header-right">
+      <span class="round-badge" id="roundBadge">Round 1 / 5</span>
+      <button class="reset-btn" onclick="resetSim()">🔄 Reset</button>
+    </div>
+  </div>
+
+  <!-- PHASE TIMELINE -->
+  <div class="timeline" id="timeline"></div>
+
+  <!-- ADVISOR ROW -->
+  <div class="advisor-row">
+    <div class="advisor-chip">🌿 Ecologist <div class="chip-tip">Energy flow follows the 10% rule — only ~10% of energy passes to each higher trophic level.</div></div>
+    <div class="advisor-chip">🌾 Farmer <div class="chip-tip">More trophic levels = more energy lost. Eating lower in the food web is more efficient for humans.</div></div>
+    <div class="advisor-chip">🌍 Climate Sci. <div class="chip-tip">Higher primary productivity = more carbon sequestered. Tropical forests store vast amounts of carbon.</div></div>
+    <div class="advisor-chip">🔬 Biochemist <div class="chip-tip">Transfer efficiency varies: 5–20% depending on species, metabolic rates, and habitat type.</div></div>
+    <div class="advisor-chip">📊 Economist <div class="chip-tip">Land use per person rises sharply with meat-heavy diets — beef uses ~20x more land than plant protein.</div></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="left-col">
+      <!-- SVG SCENE -->
+      <div class="card" style="padding:0">
+        <div id="scene-wrap">
+          <svg id="mainSVG" viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+      </div>
+
+      <!-- CHART -->
+      <div class="card">
+        <div class="card-title">📈 Resource Tracker (All Rounds)</div>
+        <canvas id="chartCanvas" height="180"></canvas>
+      </div>
+
+      <!-- REFLECTION (shows after round 5) -->
+      <div id="reflectionPanel">
+        <h2>🎓 IB Reflection</h2>
+        <div class="ref-q"><strong>1. Interaction</strong> What does "interaction" mean in this simulation? Give a real-world example.</div>
+        <div class="ref-q"><strong>2. Unexpected Consequences</strong> Which single decision had the most unexpected consequence — and why?</div>
+        <div class="ref-q"><strong>3. Cultural Perspectives</strong> How would someone from a different cultural or economic background approach these decisions differently?</div>
+        <div class="ref-q"><strong>4. Evidence-Based Revision</strong> What would you change if you ran the simulation again? Use specific evidence from your results.</div>
+        <div class="ref-q"><strong>5. Global Connection</strong> How does this connect to a current global issue you know about outside school?</div>
+        <div class="ref-q"><strong>6. Learner Profile</strong> Did your decision-making best reflect <em>Caring</em> or <em>Thinkers</em>? Justify with evidence from your choices.</div>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <!-- RESOURCE BARS -->
+      <div class="card">
+        <div class="card-title">📊 Resource Dashboard</div>
+        <div id="resBars"></div>
+      </div>
+
+      <!-- SLIDERS -->
+      <div class="card">
+        <div class="card-title">🎛️ Set Your Variables</div>
+        <div class="sliders-grid" id="slidersGrid"></div>
+      </div>
+
+      <!-- PREDICTION -->
+      <div class="card">
+        <div class="card-title">🔮 Make Your Prediction</div>
+        <p style="font-size:.78rem;color:var(--sub);margin-bottom:10px">What outcome do you predict for this round? <strong>You must choose before advancing.</strong></p>
+        <div class="pred-grid" id="predGrid"></div>
+
+        <!-- THREE FUTURES -->
+        <div id="futuresCard">
+          <div style="font-family:'Fredoka One',cursive;font-size:1rem;margin-bottom:10px;color:#166534">🌳 Three Possible Futures</div>
+          <div class="future-item future-A"><h4>🌟 Future A — Optimistic</h4><p id="futA"></p></div>
+          <div class="future-item future-B"><h4>⚖️ Future B — Realistic</h4><p id="futB"></p></div>
+          <div class="future-item future-C"><h4>💀 Future C — Pessimistic</h4><p id="futC"></p></div>
+          <div style="font-size:.78rem;font-weight:700;margin-top:10px;color:var(--sub)">Rank by likelihood (pick #1):</div>
+          <div class="rank-row">
+            <button class="rank-btn" onclick="setRank('A')">🌟 A</button>
+            <button class="rank-btn" onclick="setRank('B')">⚖️ B</button>
+            <button class="rank-btn" onclick="setRank('C')">💀 C</button>
+          </div>
+          <textarea class="justif-input" id="justifInput" rows="2" placeholder="In one sentence, justify your #1 ranking…"></textarea>
+          <button class="reveal-btn" id="revealBtn" onclick="revealResult()" disabled>🔍 Reveal Outcome</button>
+        </div>
+
+        <button class="advance-btn" id="advanceBtn" onclick="onAdvance()" disabled>🌿 Advance to Outcome</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS MODAL -->
+<div id="modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="outcome-grid" id="outcomeGrid"></div>
+    <div class="chain-box"><h4>⛓️ Cause → Effect Chain</h4><div id="chainBox"></div></div>
+    <div id="futureReveal" style="background:#f0fdf4;border:2px solid #16a34a;border-radius:12px;padding:14px;margin-bottom:14px;display:none">
+      <div style="font-family:'Fredoka One',cursive;font-size:1rem;margin-bottom:6px;color:#166534" id="futureMatchText"></div>
+      <div style="font-size:.82rem;color:var(--sub)" id="futureWhyNot"></div>
+      <div style="margin-top:10px;font-size:.82rem;font-weight:700;color:#166534" id="futureDiscuss"></div>
+    </div>
+    <div class="rw-echo"><h4>🌍 Real-World Echo</h4><p id="rwEcho" style="font-size:.82rem"></p></div>
+    <div class="ib-prompt"><h4>💡 IB Thinking Prompt</h4><p id="ibPrompt" style="font-size:.82rem"></p></div>
+    <button class="modal-close" onclick="closeModal()">✅ Continue to Next Round</button>
+  </div>
+</div>
+
+<!-- EVENT CARD -->
+<div id="eventCard">
+  <div class="event-title" id="evTitle">⚡ Random Event!</div>
+  <div class="event-body" id="evBody"></div>
+  <button class="event-close" onclick="dismissEvent()">Got it!</button>
+</div>
+
+<!-- TOAST ZONE -->
+<div id="toastZone"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const ROUNDS = 5;
+let state = {
+  round: 1,
+  prediction: null,
+  futureRank: null,
+  phase: 'sliders', // sliders → futures → reveal → modal
+  sliders: { prod:2, eff:2, levels:2, human:2 },
+  metrics: { energy0:80, energy1:50, energy2:20, land:40, carbon:65 },
+  history: [],
+  eventsUsed: [],
+  done: false
+};
+
+const SLIDER_CFG = [
+  { key:'prod',  label:'Primary Productivity', lo:'Low (Desert)', hi:'High (Tropical Forest)', icon:'🌿' },
+  { key:'eff',   label:'Energy Transfer Efficiency', lo:'5% (Low)', hi:'20% (High)', icon:'⚡' },
+  { key:'levels',label:'Trophic Levels', lo:'2 Levels', hi:'5 Levels', icon:'🔺' },
+  { key:'human', label:'Human Consumption', lo:'Plant-based', hi:'All Meat', icon:'🍽️' }
+];
+
+const PREDICTIONS = [
+  { id:'thriving', emoji:'🌱', label:'Thriving', cls:'sel' },
+  { id:'stable',   emoji:'⚖️', label:'Stable',   cls:'sel' },
+  { id:'stressed', emoji:'⚠️', label:'Resources Stressed', cls:'sel-amber' },
+  { id:'crisis',   emoji:'🔴', label:'Crisis',   cls:'sel-red' }
+];
+
+const EVENTS = [
+  { id:'drought', title:'🔥 Drought Event!', body:'A sudden drought reduces primary productivity by 20% this round — ecosystems with low diversity suffer most.' },
+  { id:'invasive', title:'🦟 Invasive Species!', body:'An invasive herbivore arrives, consuming 15% of producer biomass. Systems with high trophic levels buffer the impact better.' },
+  { id:'eutro', title:'💧 Eutrophication!', body:'Excess nutrient runoff from high-meat-diet agriculture has caused an algal bloom — carbon sequestration drops by 15%.' }
+];
+
+const RW_ECHOES = [
+  '🐄 Beef production requires ~20x more land and 10x more water than equivalent plant protein. Brazil\'s Amazon deforestation is 70–80% driven by cattle ranching.',
+  '🌊 Open-ocean food webs can have 5–6 trophic levels — yet commercial fish harvests collapse when top predators are over-targeted (e.g. Pacific bluefin tuna).',
+  '🌾 Biofuels convert only 0.1–3% of solar energy into usable fuel — far less efficient than photovoltaics, echoing the 10% rule of ecological energy transfer.',
+  '🌳 The Amazon produces ~10% of global oxygen and sequesters billions of tonnes of CO₂. Its primary productivity is the highest of any terrestrial ecosystem.',
+  '🍱 Shifting 50% of the world\'s population to plant-based diets could free up land the size of Australia for carbon sequestration and rewilding.'
+];
+
+const IB_PROMPTS = [
+  'How does the concept of "Interaction" explain why changing one trophic level affects all others? Think about the key concept.',
+  'In what ways does this simulation reflect the related concept of "Systems"? What would happen if you removed one component entirely?',
+  'Consider "Interdependence" — which species or trophic level is most critical for system stability? Use your round results as evidence.',
+  'How does "Change" manifest in this ecosystem? Is change always negative — or can disturbance lead to greater resilience?',
+  'Apply the Learner Profile attribute "Caring" — what responsibilities do humans have when their consumption choices affect entire ecosystems?'
+];
+
+// ============================================================
+// INIT
+// ============================================================
+function startSim() {
+  document.getElementById('splash').classList.add('gone');
+  document.getElementById('app').classList.add('show');
+  setTimeout(() => { document.getElementById('splash').style.display = 'none'; }, 700);
+  buildTimeline(); buildSliders(); buildPredGrid(); renderBars(); drawScene(); drawChart();
+  toast('🌱 Simulation started! Set your sliders and make a prediction.');
+}
+
+function buildTimeline() {
+  const el = document.getElementById('timeline');
+  el.innerHTML = '';
+  for (let i = 1; i <= ROUNDS; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'phase-dot';
+    dot.id = `pd${i}`;
+    const cls = i < state.round ? 'done' : i === state.round ? 'active' : '';
+    dot.innerHTML = `<div class="phase-circle ${cls}">${i < state.round ? '✓' : i}</div><div class="phase-label">Round ${i}</div>`;
+    el.appendChild(dot);
+    if (i < ROUNDS) {
+      const line = document.createElement('div');
+      line.className = `phase-line ${i < state.round ? 'done' : ''}`;
+      el.appendChild(line);
+    }
+  }
+}
+
+function buildSliders() {
+  const g = document.getElementById('slidersGrid');
+  g.innerHTML = '';
+  SLIDER_CFG.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'slider-row';
+    d.innerHTML = `
+      <div class="slider-top">
+        <span class="slider-label">${s.icon} ${s.label}</span>
+        <span class="slider-val" id="sv_${s.key}">${state.sliders[s.key]}</span>
+      </div>
+      <input type="range" min="0" max="4" step="1" value="${state.sliders[s.key]}"
+        oninput="onSlider('${s.key}',this.value)" id="sl_${s.key}">
+      <div class="slider-ends"><span>${s.lo}</span><span>${s.hi}</span></div>`;
+    g.appendChild(d);
+  });
+}
+
+function buildPredGrid() {
+  const g = document.getElementById('predGrid');
+  g.innerHTML = '';
+  PREDICTIONS.forEach(p => {
+    const b = document.createElement('button');
+    b.className = 'pred-btn';
+    b.id = `pb_${p.id}`;
+    b.innerHTML = `${p.emoji}<br>${p.label}`;
+    b.onclick = () => selectPred(p.id, p.cls);
+    g.appendChild(b);
+  });
+}
+
+function renderBars() {
+  const m = state.metrics;
+  const bars = [
+    { key:'energy0', label:'🌿 Producer Energy (kJ/m²)', val:m.energy0 },
+    { key:'energy1', label:'🐛 Primary Consumer Energy', val:m.energy1 },
+    { key:'energy2', label:'🦅 Apex Predator Energy', val:m.energy2 },
+    { key:'land',    label:'🏞️ Land Required (ha/person)', val:100-m.land },
+    { key:'carbon',  label:'🌳 Carbon Sequestration', val:m.carbon }
+  ];
+  const el = document.getElementById('resBars');
+  el.innerHTML = '';
+  bars.forEach(b => {
+    const pct = Math.max(0, Math.min(100, b.val));
+    const col = pct > 60 ? '#16a34a' : pct > 30 ? '#d97706' : '#dc2626';
+    const warn = pct < 20 ? '<span class="warn-blink">⚠️</span>' : '';
+    el.innerHTML += `
+      <div class="res-bar-wrap">
+        <div class="res-bar-label"><span>${b.label}</span><span>${warn} <b style="color:${col}">${Math.round(b.val)}</b></span></div>
+        <div class="res-bar-bg"><div class="res-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+      </div>`;
+  });
+}
+
+// ============================================================
+// SLIDERS & PREDICTION
+// ============================================================
+function onSlider(key, val) {
+  state.sliders[key] = parseInt(val);
+  document.getElementById(`sv_${key}`).textContent = val;
+  drawScene();
+  toast(`${SLIDER_CFG.find(s=>s.key===key).icon} ${SLIDER_CFG.find(s=>s.key===key).label} set to ${val}`);
+}
+
+function selectPred(id, cls) {
+  state.prediction = id;
+  document.querySelectorAll('.pred-btn').forEach(b => { b.className = 'pred-btn'; });
+  document.getElementById(`pb_${id}`).className = `pred-btn ${cls}`;
+  document.getElementById('advanceBtn').disabled = false;
+  toast('🔮 Prediction locked in!');
+}
+
+// ============================================================
+// ADVANCE → SHOW FUTURES
+// ============================================================
+function onAdvance() {
+  if (!state.prediction) return;
+  // Build Three Futures based on sliders
+  const futures = buildFutures();
+  document.getElementById('futA').textContent = futures.A;
+  document.getElementById('futB').textContent = futures.B;
+  document.getElementById('futC').textContent = futures.C;
+  document.getElementById('futuresCard').style.display = 'block';
+  document.getElementById('advanceBtn').style.display = 'none';
+  document.getElementById('revealBtn').disabled = true;
+  state.futureRank = null;
+  document.querySelectorAll('.rank-btn').forEach(b => b.classList.remove('picked'));
+  document.getElementById('justifInput').value = '';
+  toast('📋 Three Futures revealed — rank them before you reveal!');
+}
+
+function buildFutures() {
+  const { prod, eff, levels, human } = state.sliders;
+  const score = prod*2 + eff*2 - levels*1 - human*2;
+  return {
+    A: `With high efficiency and strong primary productivity, energy cascades through all trophic levels. Apex predator populations thrive, carbon sequestration peaks, and land pressure stays low.`,
+    B: `Energy is transferred with typical losses at each trophic level. Middle trophic levels sustain themselves, but apex predators receive limited energy. Land use is moderate.`,
+    C: `Energy losses compound at each level. The apex predator level collapses below viable population thresholds. Reduced plant cover lowers carbon sequestration sharply and land per person spikes.`
+  };
+}
+
+function setRank(letter) {
+  state.futureRank = letter;
+  document.querySelectorAll('.rank-btn').forEach(b => b.classList.remove('picked'));
+  event.target.classList.add('picked');
+  document.getElementById('revealBtn').disabled = !state.futureRank;
+}
+
+function revealResult() {
+  if (!state.futureRank) return;
+  computeRound();
+}
+
+// ============================================================
+// COMPUTE ROUND & SHOW MODAL
+// ============================================================
+function computeRound() {
+  const { prod, eff, levels, human } = state.sliders;
+  const prev = { ...state.metrics };
+
+  // Compute new metrics using ecological rules
+  const prodMulti = 0.3 + prod * 0.175;       // 0.3–1.0
+  const effPct    = 0.05 + eff * 0.0375;       // 5%–20%
+  const levFactor = 1 - (levels * 0.1);        // more levels = more loss
+  const humanF    = 1 + human * 0.15;          // human consumption pressure
+
+  // Check for random events
+  let eventEffect = { prod:1, carbon:1, consumer:1 };
+  const unused = EVENTS.filter(e => !state.eventsUsed.includes(e.id));
+  let triggered = null;
+  if (state.round >= 2 && unused.length > 0 && Math.random() < 0.55) {
+    triggered = unused[Math.floor(Math.random()*unused.length)];
+    state.eventsUsed.push(triggered.id);
+    if (triggered.id==='drought') eventEffect.prod = 0.8;
+    if (triggered.id==='invasive') eventEffect.consumer = 0.85;
+    if (triggered.id==='eutro') eventEffect.carbon = 0.85;
+  }
+
+  const baseEnergy = 100 * prodMulti * eventEffect.prod;
+  const e0 = Math.min(100, baseEnergy);
+  const e1 = Math.min(100, e0 * effPct * levFactor * eventEffect.consumer * 3);
+  const e2 = Math.min(100, e1 * effPct * levFactor * 2);
+  const land = Math.min(100, 30 + human*15 + levels*5 - prod*5);
+  const carbon = Math.min(100, Math.max(5, 90*prodMulti*eventEffect.carbon - human*10));
+
+  state.metrics = { energy0:Math.round(e0), energy1:Math.round(e1), energy2:Math.round(e2), land:Math.round(land), carbon:Math.round(carbon) };
+  state.history.push({ round:state.round, sliders:{...state.sliders}, metrics:{...state.metrics} });
+
+  // Future match
+  const netChange = (state.metrics.energy2 - prev.energy2) + (state.metrics.carbon - prev.carbon) - (state.metrics.land - prev.land);
+  const actualFuture = netChange > 10 ? 'A' : netChange > -5 ? 'B' : 'C';
+
+  // Determine outcome label
+  const score = e0*0.3 + e2*0.3 + carbon*0.3 - land*0.1;
+  let outcome = score > 65 ? 'thriving' : score > 45 ? 'stable' : score > 30 ? 'stressed' : 'crisis';
+
+  showModal(prev, outcome, actualFuture, triggered);
+  renderBars(); drawScene(); drawChart();
+  if (triggered) setTimeout(() => showEvent(triggered), 400);
+}
+
+function showModal(prev, outcome, actualFuture, triggered) {
+  const m = state.metrics;
+  const emojiMap = { thriving:'🌱 Thriving!', stable:'⚖️ Stable', stressed:'⚠️ Resources Stressed', crisis:'🔴 Crisis!' };
+  document.getElementById('modalTitle').textContent = `Round ${state.round} Result: ${emojiMap[outcome]}`;
+
+  // Outcome grid
+  const items = [
+    ['🌿 Producer Energy', prev.energy0, m.energy0],
+    ['🐛 1° Consumer', prev.energy1, m.energy1],
+    ['🦅 Apex Predator', prev.energy2, m.energy2],
+    ['🏞️ Land Pressure', prev.land, m.land, true],
+    ['🌳 Carbon Seq.', prev.carbon, m.carbon]
+  ];
+  document.getElementById('outcomeGrid').innerHTML = items.map(([lab,p,n,inv])=>{
+    const diff = n - p;
+    const up = inv ? diff < 0 : diff > 0;
+    const down = inv ? diff > 0 : diff < 0;
+    const arrow = diff > 2 ? '▲' : diff < -2 ? '▼' : '→';
+    const cls = up ? 'o-up' : down ? 'o-down' : 'o-same';
+    return `<div class="outcome-item"><div class="o-label">${lab}</div><div class="o-val ${cls}">${arrow} ${n}</div></div>`;
+  }).join('');
+
+  // Cause chain
+  const { prod, eff, levels, human } = state.sliders;
+  document.getElementById('chainBox').innerHTML = `
+    <div class="chain-step"><span>Primary productivity set to <b>${prod}/4</b></span><span class="chain-arrow">→</span><span>Base energy = ${m.energy0} kJ/m²</span></div>
+    <div class="chain-step"><span>Transfer efficiency ${(5+eff*3.75).toFixed(1)}%</span><span class="chain-arrow">→</span><span>Consumer energy = ${m.energy1} kJ/m²</span></div>
+    <div class="chain-step"><span>${levels+2} trophic levels × losses</span><span class="chain-arrow">→</span><span>Apex predator = ${m.energy2} kJ/m²</span></div>
+    <div class="chain-step"><span>Human consumption = ${human}/4</span><span class="chain-arrow">→</span><span>Land use index = ${m.land} | Carbon = ${m.carbon}</span></div>`;
+
+  // Future reveal
+  const fr = document.getElementById('futureReveal');
+  fr.style.display = 'block';
+  const matched = state.futureRank === actualFuture;
+  document.getElementById('futureMatchText').textContent = `The actual outcome matched Future ${actualFuture}. You predicted Future ${state.futureRank} would be most likely — ${matched ? '✅ Correct!' : '❌ Interesting — let\'s see why.'}`;
+  document.getElementById('futureWhyNot').textContent = actualFuture !== 'A' ? `Future A didn't happen because: the combination of high trophic levels and human consumption created compounding energy losses that overwhelmed productivity gains.` : `Future A happened because your choices maximised productivity while keeping consumption pressure low — energy cascaded through efficiently.`;
+  document.getElementById('futureDiscuss').textContent = `💬 Discussion: What decision would have made Future A happen instead?`;
+
+  // Real-world echo (cycle through)
+  document.getElementById('rwEcho').textContent = RW_ECHOES[(state.round-1) % RW_ECHOES.length];
+  document.getElementById('ibPrompt').textContent = IB_PROMPTS[(state.round-1) % IB_PROMPTS.length];
+
+  document.getElementById('modal').classList.add('show');
+  updateRoundBadge();
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  state.round++;
+  if (state.round > ROUNDS) {
+    endSim(); return;
+  }
+  state.prediction = null;
+  state.futureRank = null;
+  document.getElementById('futuresCard').style.display = 'none';
+  document.getElementById('advanceBtn').style.display = '';
+  document.getElementById('advanceBtn').disabled = true;
+  document.querySelectorAll('.pred-btn').forEach(b => b.className='pred-btn');
+  buildTimeline();
+  updateRoundBadge();
+  toast(`🚀 Round ${state.round} begins!`);
+}
+
+function endSim() {
+  buildTimeline();
+  updateRoundBadge();
+  document.getElementById('reflectionPanel').style.display = 'block';
+  document.getElementById('reflectionPanel').scrollIntoView({ behavior:'smooth' });
+  toast('🎓 Simulation complete! Reflect on your journey.');
+}
+
+function updateRoundBadge() {
+  document.getElementById('roundBadge').textContent = state.round > ROUNDS ? 'Complete!' : `Round ${state.round} / ${ROUNDS}`;
+}
+
+// ============================================================
+// EVENTS
+// ============================================================
+function showEvent(ev) {
+  document.getElementById('evTitle').textContent = ev.title;
+  document.getElementById('evBody').textContent = ev.body;
+  document.getElementById('eventCard').style.display = 'block';
+}
+function dismissEvent() {
+  document.getElementById('eventCard').style.display = 'none';
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, dur=3000) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.getElementById('toastZone').appendChild(t);
+  setTimeout(() => t.remove(), dur);
+}
+
+// ============================================================
+// RESET
+// ============================================================
+function resetSim() {
+  state = { round:1, prediction:null, futureRank:null, phase:'sliders',
+    sliders:{ prod:2, eff:2, levels:2, human:2 },
+    metrics:{ energy0:80, energy1:50, energy2:20, land:40, carbon:65 },
+    history:[], eventsUsed:[], done:false };
+  document.getElementById('reflectionPanel').style.display='none';
+  document.getElementById('futuresCard').style.display='none';
+  document.getElementById('advanceBtn').style.display='';
+  document.getElementById('advanceBtn').disabled=true;
+  document.getElementById('modal').classList.remove('show');
+  document.getElementById('eventCard').style.display='none';
+  buildTimeline(); buildSliders(); buildPredGrid(); renderBars(); drawScene(); drawChart();
+  updateRoundBadge();
+  toast('🔄 Simulation reset!');
+}
+
+// ============================================================
+// SVG SCENE
+// ============================================================
+function drawScene() {
+  const svg = document.getElementById('mainSVG');
+  const { prod, eff, levels, human } = state.sliders;
+  const m = state.metrics;
+
+  // Sky gradient shifts with productivity
+  const skyH = Math.round(160 + prod * 20);
+  const skyC1 = prod > 2 ? '#bae6fd' : prod > 1 ? '#dbeafe' : '#fde68a';
+  const groundC = prod > 2 ? '#86efac' : prod > 1 ? '#bbf7d0' : '#d4b896';
+
+  let html = `
+    <!-- Sky -->
+    <defs>
+      <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${skyC1}"/>
+        <stop offset="100%" stop-color="#f0fdf4"/>
+      </linearGradient>
+      <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${groundC}"/>
+        <stop offset="100%" stop-color="#166534"/>
+      </linearGradient>
+    </defs>
+    <rect width="760" height="320" fill="url(#skyGrad)"/>
+    <rect y="220" width="760" height="100" fill="url(#groundGrad)" rx="0"/>
+    <!-- Sun -->
+    <circle cx="${prod>2?680:640}" cy="50" r="${20+prod*5}" fill="#fde68a" opacity=".95">
+      <animate attributeName="r" values="${20+prod*5};${24+prod*5};${20+prod*5}" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Sun rays -->
+    ${[0,45,90,135,180,225,270,315].map(a=>`<line x1="${prod>2?680:640}" y1="50" x2="${(prod>2?680:640)+Math.cos(a*Math.PI/180)*35}" y2="${50+Math.sin(a*Math.PI/180)*35}" stroke="#f59e0b" stroke-width="2" opacity=".7"/>`).join('')}
+  `;
+
+  // TREES — number and size depend on productivity and trophic levels
+  const treeCount = Math.max(1, 2 + prod * 2);
+  const treeHeight = 30 + prod * 18;
+  const treePositions = [80,160,260,360,460,560,660,720];
+  for (let i = 0; i < treeCount && i < treePositions.length; i++) {
+    const tx = treePositions[i];
+    const ty = 220 - treeHeight;
+    const col = prod > 2 ? '#16a34a' : prod > 1 ? '#22c55e' : '#a3a87e';
+    const col2 = prod > 2 ? '#15803d' : prod > 1 ? '#16a34a' : '#71717a';
+    html += `
+      <rect x="${tx-5}" y="${ty+treeHeight-10}" width="10" height="14" fill="#92400e" rx="2"/>
+      <ellipse cx="${tx}" cy="${ty+treeHeight*0.35}" rx="${8+prod*3}" ry="${treeHeight*0.4}" fill="${col2}" opacity=".7"/>
+      <ellipse cx="${tx}" cy="${ty+treeHeight*0.25}" rx="${7+prod*2}" ry="${treeHeight*0.35}" fill="${col}"/>
+    `;
+  }
+
+  // ENERGY FLOW PARTICLES — show transfer efficiency visually
+  const particleCount = 1 + Math.floor(eff * 1.5);
+  const pCol = ['#22c55e','#f59e0b','#ef4444','#8b5cf6','#0ea5e9'];
+  for (let lv = 0; lv < Math.min(levels+2, 4); lv++) {
+    for (let p = 0; p < particleCount; p++) {
+      const delay = (lv * 1.2 + p * 0.4).toFixed(1);
+      const x1 = 100 + lv * 140, y1 = 240, x2 = x1 + 80, y2 = 140 - lv * 30;
+      html += `<circle r="5" fill="${pCol[lv]}" opacity="0.85">
+        <animateMotion dur="${2+lv*0.5}s" begin="${delay}s" repeatCount="indefinite">
+          <mpath><path d="M${x1},${y1} Q${(x1+x2)/2},${(y1+y2)/2-40} ${x2},${y2}" style="fill:none"/></mpath>
+        </animateMotion>
+      </circle>`;
+    }
+  }
+
+  // BIOMASS PYRAMID — builds visually
+  const pyramidX = 560, pyramidY = 230;
+  const pyramidLevels = Math.min(levels+2, 5);
+  const lvColors = ['#22c55e','#f59e0b','#ef4444','#8b5cf6','#0ea5e9'];
+  const lvLabels = ['Producers','1° Consumer','2° Consumer','3° Consumer','Apex'];
+  const lvWidths = [130,95,65,42,25];
+  for (let l = 0; l < pyramidLevels; l++) {
+    const ry = pyramidY - l * 22;
+    const rw = lvWidths[l] * (0.5 + prod*0.12);
+    const rx = pyramidX - rw/2;
+    const opacity = l === 0 ? 1 : l === 1 ? 0.85 : l === 2 ? 0.7 : 0.55;
+    html += `<rect x="${rx}" y="${ry-18}" width="${rw}" height="18" fill="${lvColors[l]}" rx="4" opacity="${opacity}"/>`;
+    html += `<text x="${pyramidX}" y="${ry-5}" text-anchor="middle" font-size="9" fill="#fff" font-family="Nunito,sans-serif" font-weight="700">${lvLabels[l]}</text>`;
+  }
+  html += `<text x="${pyramidX}" y="${pyramidY+14}" text-anchor="middle" font-size="10" fill="#166534" font-family="Fredoka One,cursive">Biomass Pyramid</text>`;
+
+  // DECOMPOSER pathway
+  html += `
+    <ellipse cx="420" cy="255" rx="28" ry="14" fill="#a16207" opacity=".7"/>
+    <text x="420" y="259" text-anchor="middle" font-size="9" fill="#fff" font-family="Nunito,sans-serif" font-weight="700">Decomposers</text>
+    <path d="M380,240 Q400,255 420,255" stroke="#a16207" stroke-width="2" fill="none" stroke-dasharray="4,3" opacity=".6"/>
+  `;
+
+  // HUMAN figure — gets bigger/more stressed with human slider
+  const hx = 340, hy = 215;
+  const humanStress = human > 2;
+  const hcol = humanStress ? '#ef4444' : '#2563eb';
+  html += `
+    <circle cx="${hx}" cy="${hy-24}" r="10" fill="${hcol}" opacity=".9"/>
+    <rect x="${hx-7}" y="${hy-14}" width="14" height="20" fill="${hcol}" rx="4" opacity=".9"/>
+    <line x1="${hx-7}" y1="${hy}" x2="${hx-14}" y2="${hy+14}" stroke="${hcol}" stroke-width="3"/>
+    <line x1="${hx+7}" y1="${hy}" x2="${hx+14}" y2="${hy+14}" stroke="${hcol}" stroke-width="3"/>
+    <text x="${hx}" y="${hy+28}" text-anchor="middle" font-size="8" fill="${hcol}" font-family="Nunito,sans-serif" font-weight="700">${humanStress?'😰 Over-consuming':'😊 Sustainable'}</text>
+  `;
+
+  // WATER/RIVER — colour based on carbon/land
+  const waterCol = m.carbon > 60 ? '#7dd3fc' : m.carbon > 30 ? '#fbbf24' : '#ef4444';
+  html += `<ellipse cx="200" cy="248" rx="55" ry="14" fill="${waterCol}" opacity=".6"/>`;
+  html += `<text x="200" y="252" text-anchor="middle" font-size="8" fill="#fff" font-family="Nunito,sans-serif" font-weight="700">Water</text>`;
+
+  // 10% LOSS labels
+  for (let l = 0; l < Math.min(levels+1, 4); l++) {
+    const lx = 120 + l * 140;
+    html += `<text x="${lx+40}" y="${200-l*30}" font-size="9" fill="#ef4444" font-family="Nunito,sans-serif" font-weight="700" opacity=".85">~${Math.round(100*(1-0.05-eff*0.0375))}% lost</text>`;
+  }
+
+  // ROUND label
+  html += `<rect x="10" y="10" width="120" height="26" fill="#166534" rx="10" opacity=".85"/>`;
+  html += `<text x="70" y="28" text-anchor="middle" font-size="12" fill="#fff" font-family="Fredoka One,cursive">Round ${state.round}</text>`;
+
+  svg.innerHTML = html;
+}
+
+// ============================================================
+// CHART
+// ============================================================
+function drawChart() {
+  const canvas = document.getElementById('chartCanvas');
+  canvas.width = canvas.offsetWidth || 600;
+  canvas.height = 180;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const h = canvas.height, w = canvas.width;
+  const pad = { t:14, b:28, l:36, r:14 };
+  const cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+
+  // Grid
+  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + ch * (1 - i/4);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+cw, y); ctx.stroke();
+    ctx.fillStyle = '#94a3b8'; ctx.font = '9px Nunito';
+    ctx.fillText(i*25, 2, y+4);
+  }
+
+  if (state.history.length === 0) return;
+
+  const series = [
+    { key:'energy0', col:'#16a34a', label:'Producer' },
+    { key:'energy1', col:'#f59e0b', label:'1° Cons.' },
+    { key:'energy2', col:'#ef4444', label:'Apex' },
+    { key:'carbon',  col:'#0ea5e9', label:'Carbon' },
+  ];
+
+  const pts = (key) => state.history.map((h,i) => ({
+    x: pad.l + (i / (ROUNDS-1)) * cw,
+    y: pad.t + ch * (1 - h.metrics[key]/100)
+  }));
+
+  series.forEach(s => {
+    const points = pts(s.key);
+    ctx.strokeStyle = s.col; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    points.forEach((p,i) => i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
+    ctx.stroke();
+    points.forEach(p => {
+      ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2);
+      ctx.fillStyle=s.col; ctx.fill();
+    });
+  });
+
+  // Legend
+  series.forEach((s,i) => {
+    const lx = pad.l + i * 80;
+    ctx.fillStyle = s.col; ctx.fillRect(lx, h-12, 12, 5);
+    ctx.fillStyle='#374151'; ctx.font='8px Nunito'; ctx.fillText(s.label, lx+15, h-8);
+  });
+}
+
+// Resize
+window.addEventListener('resize', () => { if (state.history.length) drawChart(); drawScene(); });
+
+// Init chart on load
+window.addEventListener('load', () => { });
+</script>
+</body>
+</html>
